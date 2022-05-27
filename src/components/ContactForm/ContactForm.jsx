@@ -1,18 +1,20 @@
 import { Formik } from 'formik';
 import { nanoid } from 'nanoid';
 import { StyledForm, Input, Label, Button } from './ContactForm.styled';
-import { useSelector, useDispatch } from 'react-redux';
-import { adder } from 'redux/contactsSlice';
+import {
+  useAddContactMutation,
+  useGetContactsQuery,
+} from 'redux/contactsSlice';
 
 const nameInputId = nanoid();
 const numberInputId = nanoid();
 
 export const ContactForm = () => {
-  const contacts = useSelector(state => state.contacts.items);
-  const dispatch = useDispatch();
+  const [addContact, result] = useAddContactMutation();
+  const { data } = useGetContactsQuery();
 
   const onFormSubmit = (values, actions) => {
-    const isDublicate = contacts.find(contact => {
+    const isDublicate = data.find(contact => {
       return contact.name === values.name;
     });
 
@@ -21,7 +23,7 @@ export const ContactForm = () => {
       return;
     }
 
-    dispatch(adder(values));
+    addContact(values);
 
     actions.resetForm();
   };
@@ -30,7 +32,7 @@ export const ContactForm = () => {
     <Formik
       initialValues={{
         name: '',
-        number: '',
+        phone: '',
       }}
       onSubmit={onFormSubmit}
     >
@@ -49,13 +51,15 @@ export const ContactForm = () => {
         <Input
           id={numberInputId}
           type="tel"
-          name="number"
+          name="phone"
           pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
           title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
           required
         />
 
-        <Button type="submit">Add contact</Button>
+        <Button type="submit" disabled={result.isLoading}>
+          {result.isLoading ? 'Adding...' : 'Add contact'}
+        </Button>
       </StyledForm>
     </Formik>
   );

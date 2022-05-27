@@ -1,18 +1,21 @@
 import { Button, Item } from './ContactListItem.styled';
 import PropTypes from 'prop-types';
-import { deleter } from 'redux/contactsSlice';
-import { useDispatch } from 'react-redux';
+import { useDeleteContactMutation } from 'redux/contactsSlice';
 
 export const ContactListItem = ({ contact }) => {
-  const dispatch = useDispatch();
+  const [deleteContact, result] = useDeleteContactMutation();
 
   return (
     <Item>
       <p>
-        {contact.name}: {contact.number}
+        {contact.name}: {contact.phone}
       </p>
-      <Button onClick={() => dispatch(deleter(contact.id))} type="button">
-        Delete
+      <Button
+        type="button"
+        onClick={() => deleteContact(contact.id)}
+        disabled={result.isLoading}
+      >
+        {result.isLoading ? 'Wait...' : 'Delete'}
       </Button>
     </Item>
   );
@@ -20,8 +23,9 @@ export const ContactListItem = ({ contact }) => {
 
 ContactListItem.propTypes = {
   contact: PropTypes.shape({
+    createdAt: PropTypes.string.isRequired,
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    number: PropTypes.string.isRequired,
+    phone: PropTypes.string.isRequired,
   }),
 };
